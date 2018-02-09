@@ -3,3 +3,4 @@ privateCSVS/
 .DS_Store
 dscomp.egg-info/
 __pycache__/
+*.swp
