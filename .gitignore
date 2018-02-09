@@ -2,3 +2,4 @@ dscomp.db
 privateCSVS/
 .DS_Store
 dscomp.egg-info/
+__pycache__/
