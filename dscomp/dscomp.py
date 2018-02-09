@@ -81,6 +81,9 @@ from sklearn.metrics import mean_squared_error
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
+    if not g.user:
+        error = "You must be logged in to do that."
+        return redirect(url_for('login'))
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No file part')
