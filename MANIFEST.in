@@ -1,0 +1,3 @@
+graft dscomp/templates
+graft dscomp/static
+include dscomp/schema.sql

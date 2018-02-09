@@ -1,0 +1,9 @@
+MANIFEST.in
+dscomp/__init__.py
+dscomp/dscomp.py
+dscomp/schema.sql
+dscomp.egg-info/PKG-INFO
+dscomp.egg-info/SOURCES.txt
+dscomp.egg-info/dependency_links.txt
+dscomp.egg-info/requires.txt
+dscomp.egg-info/top_level.txt
