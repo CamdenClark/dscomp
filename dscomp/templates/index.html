@@ -1,4 +1,25 @@
 {% extends "layout.html" %}
 {% block body %}
-<p>Welcome to the home page, dawg!</p>
+{% if entries %}
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">SubmissionId</th>
+      <th scope="col">Name</th>
+      <th scope="col">Public LB Score</th>
+      <th scope="col">Timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for sub in entries %}
+    <tr>
+      <th scope="row">{{ sub.subid }}</th>
+      <td>{{ sub.name }}</td>
+      <td>{{ sub.publicscore }}</td>
+      <td>{{ sub.timestamp }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 {% endblock body %}

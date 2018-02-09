@@ -70,19 +70,19 @@ def before_request():
 @app.route('/')
 def show_index():
     db = get_db()
-    cur = db.execute('select subid, userid, publicscore from submissions order by publicscore desc limit 10')
+    cur = db.execute('select subid, name, publicscore, timestamp from submissions inner join users on submissions.userid = users.userid order by publicscore asc limit 10')
     entries = cur.fetchall()
-    return render_template('index.html')
+    return render_template('index.html', entries=entries)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 from sklearn.metrics import mean_squared_error
+import datetime
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if not g.user:
-        error = "You must be logged in to do that."
         return redirect(url_for('login'))
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -97,10 +97,15 @@ def upload():
             user_csv = pd.read_csv(csvFile)
             scoring_csv = pd.read_csv(os.path.join(app.root_path, "privatecsvs/true_labels.csv"))
             publicCSV, privateCSV = train_test_split(scoring_csv, test_size = 0.5, random_state = os.getenv('RAND_SEED', 0))
-            joinedCSV = publicCSV.merge(user_csv, on='index_num', how='inner')
-            print(mean_squared_error(joinedCSV['label'].values, joinedCSV['true_label'].values))
-            #print(pd.read_csv(csvFile).head)
-            print(joinedCSV)
+            publicMerged = publicCSV.merge(user_csv, on='index_num', how='inner')
+            privateMerged = privateCSV.merge(user_csv, on = 'index_num', how='inner')
+            publicMSE = mean_squared_error(publicMerged['label'].values, publicMerged['true_label'].values)
+            privateMSE = mean_squared_error(privateMerged['label'].values, privateMerged['true_label'].values)
+            db = get_db()
+            db.execute('''insert into submissions (
+              userid, timestamp, privatescore, publicscore) values (?, ?, ?, ?)''',
+              [g.user['userid'], datetime.datetime.now(), privateMSE, publicMSE])
+            db.commit()
             csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('uploaded_file', filename=filename))
     return render_template('upload.html') 
