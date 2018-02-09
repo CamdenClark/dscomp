@@ -1,2 +1,4 @@
 dscomp.db
 privateCSVS/
+.DS_Store
+dscomp.egg-info/
