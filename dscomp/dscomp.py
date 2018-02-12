@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = set(['csv'])
+N_SUBMISSIONS_PER_DAY = 1
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -67,12 +68,12 @@ def before_request():
         g.user = query_db('select * from users where userid = ?',
 	[session['userid']], one=True)
 
-@app.route('/')
-def show_index():
+@app.route('/leaderboard')
+def leaderboard():
     db = get_db()
-    cur = db.execute('select subid, name, publicscore, timestamp from submissions inner join users on submissions.userid = users.userid order by publicscore asc limit 10')
+    cur = db.execute('select users.name, min(publicscore) as publicscore, count(subid) as numsubs, datetime(timestamp) as timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by publicscore asc limit 20')
     entries = cur.fetchall()
-    return render_template('index.html', entries=entries)
+    return render_template('leaderboard.html', entries=entries)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -80,18 +81,27 @@ def allowed_file(filename):
 from sklearn.metrics import mean_squared_error
 import datetime
 
+@app.route('/', methods=['GET'])
+def about():
+    return render_template('about.html')
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
+    error = None
     if not g.user:
-        return redirect(url_for('login'))
+        return redirect(url_for('login')) 
     if request.method == 'POST':
+        subs_today = query_db('''select * from submissions where strftime('%m - %d', timestamp) = strftime('%m - %d', 'now')''')
+        if subs_today is not None and len(subs_today) >= N_SUBMISSIONS_PER_DAY:
+            error = 'Already have {} submission(s) today (resets at midnight UTC)'.format(N_SUBMISSIONS_PER_DAY)
+            return render_template('upload.html', error=error)
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+            error = 'Must select a file'
+            return render_template('upload.html', error=error)
         csvFile = request.files['file']
         if csvFile.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
+            error = 'Must select a file'
+            return render_template('upload.html', error=error)
         if csvFile and allowed_file(csvFile.filename):
             filename = secure_filename(csvFile.filename)
             user_csv = pd.read_csv(csvFile)
@@ -104,10 +114,10 @@ def upload():
             db = get_db()
             db.execute('''insert into submissions (
               userid, timestamp, privatescore, publicscore) values (?, ?, ?, ?)''',
-              [g.user['userid'], datetime.datetime.now(), privateMSE, publicMSE])
+              [g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE])
             db.commit()
             csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file', filename=filename))
+            return redirect(url_for('recent_submission'))
     return render_template('upload.html') 
 
 from flask import send_from_directory
@@ -117,6 +127,12 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
 
+@app.route('/submissions/recent')
+def recent_submission():
+    if not g.user:
+        return redirect(url_for('login'))
+    submission = query_db('select subid, publicscore, timestamp from submissions where submissions.userid = ? order by timestamp desc limit 1', [g.user['userid']], one=True)
+    return render_template('recent.html', submission=submission)
 
 from passlib.hash import pbkdf2_sha256 as sha256
  
@@ -128,10 +144,10 @@ def check_password_hash(plaintext, pwhash):
     
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     """Logs the user in."""
     if g.user:
-        return redirect(url_for('show_index'))
-    error = None
+        return redirect(url_for('about'))
     if request.method == 'POST':
         user = query_db('''select * from users where
             username = ?''', [request.form['username']], one=True)
@@ -143,7 +159,7 @@ def login():
         else:
             flash('You were logged in')
             session['userid'] = user['userid']
-            return redirect(url_for('show_index'))
+            return redirect(url_for('about'))
     return render_template('login.html', error=error)
 
 
@@ -151,7 +167,7 @@ def login():
 def register():
     """Registers the user."""
     if g.user:
-        return redirect(url_for('show_index'))
+        return redirect(url_for('about'))
     error = None
     if request.method == 'POST':
         if not request.form['username']:
@@ -169,7 +185,7 @@ def register():
             db = get_db()
             db.execute('''insert into users (
               username, email, name, password) values (?, ?, ?, ?)''',
-              [request.form['username'], request.form['email'], request.form['name'],
+              [request.form['username'], request.form['email'], request.form['fullname'],
                generate_password_hash(request.form['password'])])
             db.commit()
             flash('You were successfully registered and can login now')
@@ -181,4 +197,4 @@ def logout():
     """Logs the user out."""
     flash('You were logged out')
     session.pop('userid', None)
-    return redirect(url_for('show_index'))
+    return redirect(url_for('about'))

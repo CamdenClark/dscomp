@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+{% if submission %}
+<h2>Your submission (id: {{ submission.subid }})</h2>
+<h1 class="display-3">scored {{ submission.publicscore }}</h3>
+ 
+  <h4> at {{ submission.timestamp }} </h4>
+{% else %}
+<p>No submissions yet.</p>
+{% endif %}
+
+{% endblock body %}
