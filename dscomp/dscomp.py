@@ -176,6 +176,8 @@ def register():
             error = 'You have to enter a password'
         elif request.form['password'] != request.form['password2']:
             error = 'The two passwords do not match'
+        elif not request.form['email'].lower().endswith('uidaho.edu'):
+            error = 'You must have a uidaho.edu email address to compete.'
         elif query_db('''select * from users where email = ?''', [request.form['email'].lower()], one=True) is not None:
             error = 'That email is already in use'
         else:
