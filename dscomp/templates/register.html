@@ -6,11 +6,6 @@
   {% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
   <form action="" method="post">
     <div class="form-group">
-      <label for="userinput">Username:</label>
-      <input type="text" class="form-control" id="userinput" 
-              name="username" size="30" value="{{ request.form.username }}">
-    </div>
-    <div class="form-group">
       <label for="emailinput">Email:</label>
       <input type="text" class="form-control" id="emailinput" 
               name="email" size="30" value="{{ request.form.email }}">

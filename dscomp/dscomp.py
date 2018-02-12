@@ -150,14 +150,13 @@ def login():
         return redirect(url_for('about'))
     if request.method == 'POST':
         user = query_db('''select * from users where
-            username = ?''', [request.form['username']], one=True)
+            email = ?''', [request.form['email']], one=True)
         if user is None:
-            error = 'Invalid username'
+            error = 'Invalid email'
         elif not check_password_hash(request.form['password'],
                 user['password']):
             error = 'Invalid password'
         else:
-            flash('You were logged in')
             session['userid'] = user['userid']
             return redirect(url_for('about'))
     return render_template('login.html', error=error)
@@ -170,22 +169,20 @@ def register():
         return redirect(url_for('about'))
     error = None
     if request.method == 'POST':
-        if not request.form['username']:
-            error = 'You have to enter a username'
-        elif not request.form['email'] or \
+        if not request.form['email'] or \
                 '@' not in request.form['email']:
             error = 'You have to enter a valid email address'
         elif not request.form['password']:
             error = 'You have to enter a password'
         elif request.form['password'] != request.form['password2']:
             error = 'The two passwords do not match'
-        elif get_user_id(request.form['username']) is not None:
-            error = 'The username is already taken'
+        elif query_db('''select * from users where email = ?''', [request.form['email'].lower()], one=True) is not None:
+            error = 'That email is already in use'
         else:
             db = get_db()
             db.execute('''insert into users (
-              username, email, name, password) values (?, ?, ?, ?)''',
-              [request.form['username'], request.form['email'], request.form['fullname'],
+              email, name, password) values (?, ?, ?)''',
+              [request.form['email'].lower(), request.form['fullname'],
                generate_password_hash(request.form['password'])])
             db.commit()
             flash('You were successfully registered and can login now')

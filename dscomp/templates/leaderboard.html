@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block body %}
-{% if entries %}
 <table class="table">
   <thead>
     <tr>
@@ -10,6 +9,7 @@
       <th scope="col">Timestamp (UTC)</th>
     </tr>
   </thead>
+  {% if entries %}
   <tbody>
   {% for sub in entries %}
     <tr>
@@ -19,7 +19,7 @@
       <td>{{ sub.timestamp }}</td>
     </tr>
     {% endfor %}
+  {% endif %}
   </tbody>
 </table>
-{% endif %}
 {% endblock body %}
