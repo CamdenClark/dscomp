@@ -91,7 +91,8 @@ def upload():
     if not g.user:
         return redirect(url_for('login')) 
     if request.method == 'POST':
-        subs_today = query_db('''select * from submissions where strftime('%m - %d', timestamp) = strftime('%m - %d', 'now')''')
+        subs_today = query_db('''select * from submissions where userid = ? and strftime('%m - %d', timestamp) = strftime('%m - %d', 'now')''',
+                [g.user['userid']])
         if subs_today is not None and len(subs_today) >= N_SUBMISSIONS_PER_DAY:
             error = 'Already have {} submission(s) today (resets at midnight UTC)'.format(N_SUBMISSIONS_PER_DAY)
             return render_template('upload.html', error=error)
@@ -102,22 +103,29 @@ def upload():
         if csvFile.filename == '':
             error = 'Must select a file'
             return render_template('upload.html', error=error)
+        if not allowed_file(csvFile.filename):
+            error = 'Must upload a csv file.'
+            return render_template('upload.html', error=error)
         if csvFile and allowed_file(csvFile.filename):
-            filename = secure_filename(csvFile.filename)
-            user_csv = pd.read_csv(csvFile)
-            scoring_csv = pd.read_csv(os.path.join(app.root_path, "privatecsvs/true_labels.csv"))
-            publicCSV, privateCSV = train_test_split(scoring_csv, test_size = 0.5, random_state = os.getenv('RAND_SEED', 0))
-            publicMerged = publicCSV.merge(user_csv, on='index_num', how='inner')
-            privateMerged = privateCSV.merge(user_csv, on = 'index_num', how='inner')
-            publicMSE = mean_squared_error(publicMerged['label'].values, publicMerged['true_label'].values)
-            privateMSE = mean_squared_error(privateMerged['label'].values, privateMerged['true_label'].values)
-            db = get_db()
-            db.execute('''insert into submissions (
-              userid, timestamp, privatescore, publicscore) values (?, ?, ?, ?)''',
-              [g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE])
-            db.commit()
-            csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('recent_submission'))
+            try:
+                filename = secure_filename(csvFile.filename)
+                user_csv = pd.read_csv(csvFile)
+                scoring_csv = pd.read_csv(os.path.join(app.root_path, "privatecsvs/true_labels.csv"))
+                publicCSV, privateCSV = train_test_split(scoring_csv, test_size = 0.5, random_state = os.getenv('RAND_SEED', 0))
+                publicMerged = publicCSV.merge(user_csv, on='index_num', how='inner')
+                privateMerged = privateCSV.merge(user_csv, on = 'index_num', how='inner')
+                publicMSE = mean_squared_error(publicMerged['label'].values, publicMerged['true_label'].values)
+                privateMSE = mean_squared_error(privateMerged['label'].values, privateMerged['true_label'].values)
+                db = get_db()
+                db.execute('''insert into submissions (
+                  userid, timestamp, privatescore, publicscore) values (?, ?, ?, ?)''',
+                  [g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE])
+                db.commit()
+                csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                return redirect(url_for('recent_submission'))
+            except Exception as ex:
+                error = 'There was an error reading your submission. Make sure you read the submission styling guidelines carefully. If you think it''s an error on our end, please contact us and describe the error to the best of your ability.'
+                return render_template('upload.html', error=error)
     return render_template('upload.html') 
 
 from flask import send_from_directory
@@ -177,7 +185,7 @@ def register():
         elif request.form['password'] != request.form['password2']:
             error = 'The two passwords do not match'
         elif not request.form['email'].lower().endswith('uidaho.edu'):
-            error = 'You must have a uidaho.edu email address to compete.'
+            error = 'You must have a uidaho email address to compete.'
         elif query_db('''select * from users where email = ?''', [request.form['email'].lower()], one=True) is not None:
             error = 'That email is already in use'
         else:
