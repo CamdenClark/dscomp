@@ -205,7 +205,7 @@ def admin():
 @app.route('/scoring', methods=['GET'])
 def scoring():
     content = query_db('''select content from pages where page = 'scoring';''', one=True)
-    return render_template('data.html', content=content)
+    return render_template('scoring.html', content=content)
 
 @app.route('/data', methods=['GET'])
 def data():
