@@ -12,12 +12,15 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'csvs')
+PRIVATECSV_FOLDER = os.path.join(app.root_path, 'privatecsvs')
+
 app.config.update(dict(
     DATABASE = os.path.join(app.root_path, 'dscomp.db'),
     SECRET_KEY = 'devkey',
     USERNAME = 'admin',
     PASSWORD = 'default',
-    UPLOAD_FOLDER = UPLOAD_FOLDER
+    UPLOAD_FOLDER = UPLOAD_FOLDER,
+    PRIVATECSV_FOLDER = PRIVATECSV_FOLDER
 ))
 
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
@@ -104,8 +107,9 @@ def upload():
         if csvFile and allowed_file(csvFile.filename):
             try:
                 filename = secure_filename(csvFile.filename)
-                user_csv = pd.read_csv(csvFile)
-                scoring_csv = pd.read_csv(os.path.join(app.root_path, "privatecsvs/true_labels.csv"))
+                csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                user_csv = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                scoring_csv = pd.read_csv(os.path.join(app.config['PRIVATECSV_FOLDER'], "test_labels.csv"))
                 publicCSV, privateCSV = train_test_split(scoring_csv, test_size = 0.5, random_state = os.getenv('RAND_SEED', 0))
                 publicMerged = publicCSV.merge(user_csv, on='index_num', how='inner')
                 privateMerged = privateCSV.merge(user_csv, on = 'index_num', how='inner')
@@ -116,9 +120,9 @@ def upload():
                   userid, timestamp, privatescore, publicscore) values (?, ?, ?, ?)''',
                   [g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE])
                 db.commit()
-                csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 return redirect(url_for('recent_submission'))
             except Exception as ex:
+                print(str(ex))
                 error = 'There was an error reading your submission. Make sure you read the submission styling guidelines carefully. If you think it''s an error on our end, please contact us and describe the error to the best of your ability.'
                 return render_template('upload.html', error=error)
     return render_template('upload.html') 
@@ -127,8 +131,9 @@ from flask import send_from_directory
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
+    print("test")
+    return send_from_directory(os.path.join(app.root_path,
+                               'csvs'), filename)
 
 @app.route('/submissions/recent')
 def recent_submission():
@@ -149,7 +154,46 @@ def check_password_hash(plaintext, pwhash):
 def admin():
     if g.user['admin']==0:
         return redirect(url_for('about'))
+    if not request.method == 'POST':
+        db = get_db()
+        cur = db.execute('select users.name, min(privatescore) as privatescore, count(subid) as numsubs, datetime(timestamp) as timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore asc limit 20')
+        entries = cur.fetchall()
+        return render_template('admin.html', entries = entries)
+    filetypes = [inputlabel for inputlabel in request.files]
+    if len(filetypes) == 0:
+        error = 'Must select a file'
+        return render_template('admin.html', error=error) 
+    if len(filetypes) > 1:
+        error = 'Must upload files one at a time'
+        return render_template('admin.html', error=error)
+    csvFile = request.files[filetypes[0]]
+    if csvFile.filename == '':
+        error = 'Must select a file'
+        return render_template('admin.html', error=error)
+    if not allowed_file(csvFile.filename):
+        error = 'Must upload a csv file.'
+        return render_template('admin.html', error=error)
+    if csvFile and allowed_file(csvFile.filename):
+        try:
+            input_to_filename = {
+                    'testnolabels': os.path.join(app.config['UPLOAD_FOLDER'], 'test.csv'),
+                    'train': os.path.join(app.config['UPLOAD_FOLDER'], 'train.csv'),
+                    'testlabels': os.path.join(app.config['PRIVATECSV_FOLDER'], 'test_labels.csv')
+            }
+            if filetypes[0] in input_to_filename.keys():
+                csvFile.save(input_to_filename[filetypes[0]])
+                return redirect(url_for('data'))
+            else:
+                error = 'Must use the approved file inputs.'
+                return render_template('admin.html', error=error)
+        except Exception as ex:
+            error = 'Something unknown went wrong, contact us.'
+            return render_template('admin.html', error=error)
     return render_template('admin.html')
+
+@app.route('/data', methods=['GET', 'POST'])
+def data():
+    return render_template('data.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -192,7 +236,6 @@ def register():
             error = 'That email is already in use'
         else:
             db = get_db()
-            print(request.form['admin'])
             if request.form['admin'] == ADMIN_SECRET:
                 admin = 1
             else:

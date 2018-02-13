@@ -1,4 +1,61 @@
 {% extends "layout.html" %}
 {% block body %}
-<p>This is the admin page.</p>
+{% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
+<div class="row">
+  <div class="col-md-4">
+    <h4>Upload test labels</h4>
+    <p>This should be <strong>hidden</strong> from the user.</p>
+    <form method=post enctype=multipart/form-data>
+      <div class="form-group">
+        <input type=file class="form-control-file" name=testlabels>
+      </div>
+      <button type=submit class="btn btn-primary">Upload test labels</button>
+    </form>
+  </div>
+  <div class="col-md-4">
+    <h4>Upload train data</h4>
+    <p>This will be shown to the user</p>
+    <form method=post enctype=multipart/form-data>
+      <div class="form-group">
+        <input type=file class="form-control-file" name=train>
+      </div>
+      <button type=submit class="btn btn-primary">Upload train data</button>
+    </form>
+  </div>
+  <div class="col-md-4">
+    <h4>Upload test data (without labels)</h4>
+    <p>This will be available to the user.</p>
+    <form method=post enctype=multipart/form-data>
+      <div class="form-group">
+        <input type=file class="form-control-file" name=testnolabels>
+      </div>
+      <button type=submit class="btn btn-primary">Upload test data (without labels)</button>
+    </form>
+  </div>
+</div>
+
+<div class="row">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col"># Submissions</th>
+        <th scope="col">Private LB Score</th>
+        <th scope="col">Timestamp (UTC)</th>
+      </tr>
+    </thead>
+    {% if entries %}
+    <tbody>
+    {% for sub in entries %}
+      <tr>
+        <th scope="row">{{ sub.name }}</th>
+        <td>{{ sub.numsubs }}</td>
+        <td>{{ sub.privatescore }}</td>
+        <td>{{ sub.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+</div>
 {% endblock body %}
