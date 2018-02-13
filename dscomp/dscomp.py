@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, redirect
+from flask_misaka import Misaka
 import pandas as pd
 from sklearn.model_selection import train_test_split 
 from werkzeug.utils import secure_filename
@@ -9,6 +10,7 @@ ALLOWED_EXTENSIONS = set(['csv'])
 N_SUBMISSIONS_PER_DAY = 1
 
 app = Flask(__name__)
+Misaka(app)
 app.config.from_object(__name__)
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'csvs')
@@ -81,7 +83,8 @@ import datetime
 
 @app.route('/', methods=['GET'])
 def about():
-    return render_template('about.html')
+    about = query_db('''select content from pages where page = 'about';''', one = True)
+    return render_template('about.html', about = about)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -193,7 +196,8 @@ def admin():
 
 @app.route('/data', methods=['GET', 'POST'])
 def data():
-    return render_template('data.html')
+    content = query_db('''select content from pages where page = 'train' or page = 'test';''')
+    return render_template('data.html', content=content)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-<p>This is an on-campus data science competition for University of Idaho students.</p>
-<p> This is an about page!</p>
+{% filter markdown %}
+{{ about.content }}
+{% endfilter %}
 {% endblock body %}

@@ -1,6 +1,19 @@
 {% extends "layout.html" %}
 {% block title %}Sign In{% endblock %}
 {% block body %}
+<h1>Download datasets:</h1>
 <a href={{ url_for('uploaded_file', filename='train.csv') }}>Train</a> 
 
+<p>Description of train dataset:</p>
+{% filter markdown %}
+{{ content[0].content }}
+{% endfilter %}
+<br />
+<a href={{ url_for('uploaded_file', filename='test.csv') }}>Test</a> 
+
+<p>Description of test dataset:</p>
+
+{% filter markdown %}
+{{ content[1].content }}
+{% endfilter %}
 {% endblock body %}
