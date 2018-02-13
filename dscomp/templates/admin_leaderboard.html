@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col"># Submissions</th>
+        <th scope="col">Private LB Score</th>
+        <th scope="col">Timestamp (UTC)</th>
+      </tr>
+    </thead>
+    {% if entries %}
+    <tbody>
+    {% for sub in entries %}
+      <tr>
+        <th scope="row">{{ sub.name }}</th>
+        <td>{{ sub.numsubs }}</td>
+        <td>{{ sub.privatescore }}</td>
+        <td>{{ sub.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock body %}

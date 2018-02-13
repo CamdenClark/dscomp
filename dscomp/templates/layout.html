@@ -19,7 +19,16 @@
       </div>
     </li>
     {% if g.user['admin'] == 1 %}
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin') }}">Admin</a></li>	 
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+       Admin 
+      </a>
+      <div class="dropdown-menu" aria-labelledby="adminDropdown">
+        <a class="dropdown-item" href="{{ url_for('admin_edit') }}">Edit pages</a>
+        <a class="dropdown-item" href="{{ url_for('admin_upload') }}">Upload competition files</a>
+        <a class="dropdown-item" href="{{ url_for('admin_leaderboard') }}">Private leaderboard</a>
+      </div>
+    </li>
     {% endif %}
     <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
     {% if g.user %}

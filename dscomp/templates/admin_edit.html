@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="col-md-9">
+  <h2>Admin edit</h2>
+  {% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
+  <form action="" method="post">
+    <div class="form-group">
+      <label for="train">Description of train dataset:</label>
+      <textarea class="form-control" id="train" 
+                                     name="train" size="30">{{ pages.train }}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="test">Description of test dataset:</label>
+      <textarea type="text" class="form-control" id="test" 
+                                                 name="test" size="30">{{ pages.test }}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="about">Main about page</label>
+      <textarea type="text" class="form-control" id="about" 
+                                                 name="about" size="30">{{ pages.about }}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="scoring">Description of scoring and prizes:</label>
+      <textarea type="text" class="form-control" id="scoring" 
+              name="scoring" size="30">{{ pages.scoring }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit edits to pages</button>
+  </form>
+</div>
+{% endblock %}

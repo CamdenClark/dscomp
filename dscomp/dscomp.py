@@ -161,29 +161,44 @@ def generate_password_hash(plaintext):
 def check_password_hash(plaintext, pwhash):
     return sha256.verify(plaintext, pwhash)
 
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
+@app.route('/admin/leaderboard', methods=['GET'])
+def admin_leaderboard():
+    db = get_db()
+    cur = db.execute('select users.name, min(privatescore) as privatescore, count(subid) as numsubs, datetime(timestamp) as timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore asc limit 20')
+    entries = cur.fetchall()
+    return render_template('admin_leaderboard.html', entries = entries)
+
+@app.route('/admin/edit', methods=['GET', 'POST'])
+def admin_edit():
+    if request.method == 'GET':
+        all_pages = query_db('select page, content from pages')
+        pages = {page: content for (page, content) in all_pages}
+        return render_template('admin_edit.html', pages=pages)
+    for page in request.form.keys():
+        db = get_db()
+        cur = db.execute('update pages set content = ? where page = ?',
+                [request.form[page], page])
+        db.commit()
+    return redirect(url_for('admin_edit'))
+
+@app.route('/admin/upload', methods=['GET', 'POST'])
+def admin_upload():
     if g.user['admin']==0:
         return redirect(url_for('about'))
-    if not request.method == 'POST':
-        db = get_db()
-        cur = db.execute('select users.name, min(privatescore) as privatescore, count(subid) as numsubs, datetime(timestamp) as timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore asc limit 20')
-        entries = cur.fetchall()
-        return render_template('admin.html', entries = entries)
     filetypes = [inputlabel for inputlabel in request.files]
     if len(filetypes) == 0:
         error = 'Must select a file'
-        return render_template('admin.html', error=error) 
+        return render_template('admin_upload.html', error=error) 
     if len(filetypes) > 1:
         error = 'Must upload files one at a time'
-        return render_template('admin.html', error=error)
+        return render_template('admin_upload.html', error=error)
     csvFile = request.files[filetypes[0]]
     if csvFile.filename == '':
         error = 'Must select a file'
-        return render_template('admin.html', error=error)
+        return render_template('admin_upload.html', error=error)
     if not allowed_file(csvFile.filename):
         error = 'Must upload a csv file.'
-        return render_template('admin.html', error=error)
+        return render_template('admin_upload.html', error=error)
     if csvFile and allowed_file(csvFile.filename):
         try:
             input_to_filename = {
@@ -196,11 +211,11 @@ def admin():
                 return redirect(url_for('data'))
             else:
                 error = 'Must use the approved file inputs.'
-                return render_template('admin.html', error=error)
+                return render_template('admin_upload.html', error=error)
         except Exception as ex:
             error = 'Something unknown went wrong, contact us.'
-            return render_template('admin.html', error=error)
-    return render_template('admin.html')
+            return render_template('admin_upload.html', error=error)
+    return render_template('admin_upload.html')
 
 @app.route('/scoring', methods=['GET'])
 def scoring():
