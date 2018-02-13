@@ -4,7 +4,8 @@ create table users (
 	userid integer primary key autoincrement,
 	name text not null,
 	email text not null,
-	password text not null
+	password text not null,
+	admin int not null
 );
 create table submissions (
 	subid integer primary key autoincrement,

@@ -56,11 +56,6 @@ def query_db(query, args=(), one=False):
     rv = cur.fetchall()
     return (rv[0] if rv else None) if one else rv
 
-def get_user_id(username):
-    """Convenience method to look up the id for a username."""
-    rv = query_db('select userid from users where username = ?', [username], one=True)
-    return rv[0] if rv else None
-
 @app.before_request
 def before_request():
     g.user = None
@@ -149,7 +144,13 @@ def generate_password_hash(plaintext):
 
 def check_password_hash(plaintext, pwhash):
     return sha256.verify(plaintext, pwhash)
-    
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if g.user['admin']==0:
+        return redirect(url_for('about'))
+    return render_template('admin.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -169,6 +170,7 @@ def login():
             return redirect(url_for('about'))
     return render_template('login.html', error=error)
 
+ADMIN_SECRET = 'admin'
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -190,12 +192,16 @@ def register():
             error = 'That email is already in use'
         else:
             db = get_db()
+            print(request.form['admin'])
+            if request.form['admin'] == ADMIN_SECRET:
+                admin = 1
+            else:
+                admin = 0
             db.execute('''insert into users (
-              email, name, password) values (?, ?, ?)''',
+              email, name, password, admin) values (?, ?, ?, ?)''',
               [request.form['email'].lower(), request.form['fullname'],
-               generate_password_hash(request.form['password'])])
+               generate_password_hash(request.form['password']), admin])
             db.commit()
-            flash('You were successfully registered and can login now')
             return redirect(url_for('login'))
     return render_template('register.html', error=error)
 

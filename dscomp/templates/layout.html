@@ -8,8 +8,10 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	<a class="navbar-brand" href="{{ url_for('about') }}">UI DataScience Competition</a>	
 	<ul class="navbar-nav mr-auto">
-
-		{% if g.user %}
+                {% if g.user['admin'] == 1 %}
+		<li class="nav-item"><a class="nav-link" href="{{ url_for('admin') }}">Admin</a></li>	 
+                {% endif %}
+                {% if g.user %}
 		<li class="nav-item"><a class="nav-link" href="{{ url_for('upload') }}">Upload</a></li>	
 		<li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
 		{% else %}
