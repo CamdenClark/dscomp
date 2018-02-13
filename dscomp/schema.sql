@@ -14,10 +14,10 @@ create table pages (
 	content text
 );
 
-insert into pages (page, content) values ('train', 'This is a train dataset. \n Look, you can use **markdown**! ~~');
-insert into pages (page, content) values ('test', 'This is a test dataset. \n Look, you can use **markdown**! ~~');
-insert into pages (page, content) values ('about', 'This is an about page. \n Look, you can use **markdown**! ~~');
-insert into pages (page, content) values ('scoring', 'This describes a scoring page. \n Look, you can use **markdown**! ~~');
+insert into pages (page, content) values ('train', 'This is a train dataset. Look, you can use **markdown**! ~~');
+insert into pages (page, content) values ('test', 'This is a test dataset. Look, you can use **markdown**! ~~');
+insert into pages (page, content) values ('about', 'This is an about page. Look, you can use **markdown**! ~~');
+insert into pages (page, content) values ('scoring', 'This describes a scoring page. Look, you can use **markdown**! ~~');
 
 create table submissions (
 	subid integer primary key autoincrement,

@@ -138,6 +138,14 @@ def uploaded_file(filename):
     return send_from_directory(os.path.join(app.root_path,
                                'csvs'), filename)
 
+
+@app.route('/submissions')
+def submissions():
+    if not g.user:
+        return redirect(url_for('login'))
+    submissions = query_db('select subid, publicscore, timestamp, notes from submissions where submissions.userid = ? order by timestamp desc', [g.user['userid']])
+    return render_template('submissions.html', submissions=submissions)
+
 @app.route('/submissions/recent')
 def recent_submission():
     if not g.user:
@@ -194,7 +202,12 @@ def admin():
             return render_template('admin.html', error=error)
     return render_template('admin.html')
 
-@app.route('/data', methods=['GET', 'POST'])
+@app.route('/scoring', methods=['GET'])
+def scoring():
+    content = query_db('''select content from pages where page = 'scoring';''', one=True)
+    return render_template('data.html', content=content)
+
+@app.route('/data', methods=['GET'])
 def data():
     content = query_db('''select content from pages where page = 'train' or page = 'test';''')
     return render_template('data.html', content=content)
