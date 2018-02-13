@@ -120,8 +120,8 @@ def upload():
                 privateMSE = mean_squared_error(privateMerged['label'].values, privateMerged['true_label'].values)
                 db = get_db()
                 db.execute('''insert into submissions (
-                  userid, timestamp, privatescore, publicscore) values (?, ?, ?, ?)''',
-                  [g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE])
+                  userid, timestamp, privatescore, publicscore, notes) values (?, ?, ?, ?, ?)''',
+                  [g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE, request.form['notes']])
                 db.commit()
                 return redirect(url_for('recent_submission'))
             except Exception as ex:
