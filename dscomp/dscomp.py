@@ -1,11 +1,15 @@
 import os
 import sqlite3
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, redirect
+from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, redirect, send_from_directory
 from flask_misaka import Misaka
 import pandas as pd
 from sklearn.model_selection import train_test_split 
 from werkzeug.utils import secure_filename
+from sklearn.metrics import mean_squared_error
+import datetime
+from dscomp.utilities.password import generate_password_hash, check_password_hash
 
+ADMIN_SECRET = 'admin'
 ALLOWED_EXTENSIONS = set(['csv'])
 N_SUBMISSIONS_PER_DAY = 1
 
@@ -78,8 +82,6 @@ def leaderboard():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-from sklearn.metrics import mean_squared_error
-import datetime
 
 @app.route('/', methods=['GET'])
 def about():
@@ -130,8 +132,6 @@ def upload():
                 return render_template('upload.html', error=error)
     return render_template('upload.html') 
 
-from flask import send_from_directory
-
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     print("test")
@@ -152,14 +152,6 @@ def recent_submission():
         return redirect(url_for('login'))
     submission = query_db('select subid, publicscore, timestamp from submissions where submissions.userid = ? order by timestamp desc limit 1', [g.user['userid']], one=True)
     return render_template('recent.html', submission=submission)
-
-from passlib.hash import pbkdf2_sha256 as sha256
- 
-def generate_password_hash(plaintext):
-    return sha256.encrypt(plaintext, rounds=200000, salt_size=16)
-
-def check_password_hash(plaintext, pwhash):
-    return sha256.verify(plaintext, pwhash)
 
 @app.route('/admin/leaderboard', methods=['GET'])
 def admin_leaderboard():
@@ -185,6 +177,8 @@ def admin_edit():
 def admin_upload():
     if g.user['admin']==0:
         return redirect(url_for('about'))
+    if request.method == "GET":
+        return render_template('admin_upload.html')
     filetypes = [inputlabel for inputlabel in request.files]
     if len(filetypes) == 0:
         error = 'Must select a file'
@@ -246,7 +240,6 @@ def login():
             return redirect(url_for('about'))
     return render_template('login.html', error=error)
 
-ADMIN_SECRET = 'admin'
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
