@@ -4,8 +4,6 @@ import sqlite3
 from flask_misaka import Misaka
 
 ADMIN_SECRET = 'admin'
-ALLOWED_EXTENSIONS = set(['csv'])
-N_SUBMISSIONS_PER_DAY = 1
 
 app = Flask(__name__)
 Misaka(app)
