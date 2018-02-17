@@ -8,28 +8,7 @@ from werkzeug.utils import secure_filename
 from sklearn.metrics import mean_squared_error
 import datetime
 from dscomp.utilities.password import generate_password_hash, check_password_hash
-
-ADMIN_SECRET = 'admin'
-ALLOWED_EXTENSIONS = set(['csv'])
-N_SUBMISSIONS_PER_DAY = 1
-
-app = Flask(__name__)
-Misaka(app)
-app.config.from_object(__name__)
-
-UPLOAD_FOLDER = os.path.join(app.root_path, 'csvs')
-PRIVATECSV_FOLDER = os.path.join(app.root_path, 'privatecsvs')
-
-app.config.update(dict(
-    DATABASE = os.path.join(app.root_path, 'dscomp.db'),
-    SECRET_KEY = 'devkey',
-    USERNAME = 'admin',
-    PASSWORD = 'default',
-    UPLOAD_FOLDER = UPLOAD_FOLDER,
-    PRIVATECSV_FOLDER = PRIVATECSV_FOLDER
-))
-
-app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+from dscomp import app
 
 def connect_db():
     rv = sqlite3.connect(app.config['DATABASE'])
