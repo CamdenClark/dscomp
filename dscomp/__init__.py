@@ -25,4 +25,5 @@ app.config.update(dict(
 
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
+import dscomp.utilities.database
 import dscomp.views
