@@ -178,6 +178,7 @@ def register():
     """Registers the user."""
     if g.user:
         return redirect(url_for('about'))
+    error = None
     if request.method == 'POST':
         if not request.form['email'] or \
                 '@' not in request.form['email']:
