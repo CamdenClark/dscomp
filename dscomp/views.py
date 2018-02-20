@@ -193,7 +193,7 @@ def register():
             error = 'That email is already in use'
         else:
             db = get_db()
-            if request.form['admin'] == ADMIN_SECRET:
+            if request.form['admin'] == os.getenv("ADMIN_SECRET", "admin"):
                 admin = 1
             else:
                 admin = 0
