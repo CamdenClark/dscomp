@@ -1,6 +1,0 @@
-flask
-sqlite3
-pandas
-sklearn
-flask_misaka
-passlib
