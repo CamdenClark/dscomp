@@ -6,3 +6,5 @@ __pycache__/
 *.swp
 *.csv
 venv/
+*.pyc
+.uwsgi_plugins_builder/
