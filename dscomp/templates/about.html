@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
 {% filter markdown %}
-{{ about.content }}
+{{ about.content|safe }}
 {% endfilter %}
 {% endblock body %}

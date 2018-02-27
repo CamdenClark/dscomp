@@ -2,6 +2,6 @@
 {% block body %}
 <h1>Description of scoring</h1>
 {% filter markdown %}
-{{ content.content }}
+{{ content.content|safe }}
 {% endfilter %}
 {% endblock body %}
