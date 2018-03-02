@@ -8,3 +8,4 @@ __pycache__/
 venv/
 *.pyc
 .uwsgi_plugins_builder/
+/settings.cfg

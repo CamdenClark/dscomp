@@ -15,8 +15,8 @@ N_SUBMISSIONS_PER_DAY = 1
 def before_request():
     g.user = None
     if 'userid' in session:
-        g.user = query_db('select * from users where userid = ?',
-	[session['userid']], one=True)
+        g.user = query_db('select * from users where userid = %s',
+    (session['userid'],), one=True)
 
 @app.route('/', methods=['GET'])
 def about():
@@ -36,8 +36,9 @@ def admin_edit():
         return render_template('admin_edit.html', pages=pages)
     for page in request.form.keys():
         db = get_db()
-        cur = db.execute('update pages set content = ? where page = ?',
-                [request.form[page], page])
+        cur = db.cursor()
+        cur.execute('update pages set content = %s where page = %s',
+                (request.form[page], page))
         db.commit()
     return redirect(url_for('admin_edit'))
 
@@ -73,6 +74,7 @@ def admin_upload():
             error = 'Must use the approved file inputs.'
             return render_template('admin_upload.html', error=error)
     except Exception as ex:
+        app.logger.error(ex)
         error = 'Something unknown went wrong, contact us.'
         return render_template('admin_upload.html', error=error)
     return render_template('admin_upload.html')
@@ -84,7 +86,7 @@ def data():
 
 @app.route('/leaderboard')
 def leaderboard():
-    entries = query_db('select users.name, min(publicscore) as publicscore, count(subid) as numsubs, datetime(timestamp) as timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by publicscore asc limit 20')
+    entries = query_db('select users.name, min(publicscore) as publicscore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by publicscore asc limit 20')
     return render_template('leaderboard.html', entries=entries)
 
 @app.route('/scoring', methods=['GET'])
@@ -96,14 +98,14 @@ def scoring():
 def submissions():
     if not g.user:
         return redirect(url_for('login'))
-    submissions = query_db('select subid, publicscore, timestamp, notes from submissions where submissions.userid = ? order by timestamp desc', [g.user['userid']])
+    submissions = query_db('select subid, publicscore, timestamp, notes from submissions where submissions.userid = %s order by timestamp desc', (g.user['userid'],))
     return render_template('submissions.html', submissions=submissions)
 
 @app.route('/submissions/recent')
 def recent_submission():
     if not g.user:
         return redirect(url_for('login'))
-    submission = query_db('select subid, publicscore, timestamp from submissions where submissions.userid = ? order by timestamp desc limit 1', [g.user['userid']], one=True)
+    submission = query_db('select subid, publicscore, timestamp from submissions where submissions.userid = %s order by timestamp desc limit 1', (g.user['userid'],), one=True)
     return render_template('recent.html', submission=submission)
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -113,8 +115,8 @@ def upload():
         return redirect(url_for('login')) 
     if request.method == 'GET':
         return render_template('upload.html')
-    subs_today = query_db('''select * from submissions where userid = ? and strftime('%m - %d', timestamp) = strftime('%m - %d', 'now')''',
-            [g.user['userid']])
+    subs_today = query_db('''select * from submissions where userid = %s and date(timestamp) = curdate()''',
+            (g.user['userid'],))
     if subs_today is not None and len(subs_today) >= N_SUBMISSIONS_PER_DAY:
         error = 'Already have {} submission(s) today (resets at midnight UTC)'.format(N_SUBMISSIONS_PER_DAY)
     if 'file' not in request.files:
@@ -137,13 +139,13 @@ def upload():
         publicMSE = mean_squared_error(publicMerged['label'].values, publicMerged['true_label'].values)
         privateMSE = mean_squared_error(privateMerged['label'].values, privateMerged['true_label'].values)
         db = get_db()
-        db.execute('''insert into submissions (
-          userid, timestamp, privatescore, publicscore, notes) values (?, ?, ?, ?, ?)''',
-          [g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE, request.form['notes']])
+        db.cursor().execute('''insert into submissions (
+          userid, timestamp, privatescore, publicscore, notes) values (%s, %s, %s, %s, %s)''',
+          (g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE, request.form['notes']))
         db.commit()
         return redirect(url_for('recent_submission'))
     except Exception as ex:
-        print(str(ex))
+        app.logger.error(str(ex))
         error = 'There was an error reading your submission. Make sure you read the submission styling guidelines carefully. If you think it''s an error on our end, please contact us and describe the error to the best of your ability.'
         return render_template('upload.html', error=error)
 
@@ -161,7 +163,7 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
     user = query_db('''select * from users where
-        email = ?''', [request.form['email']], one=True)
+        email = %s''', (request.form['email'],), one=True)
     if user is None:
         error = 'Invalid email'
     elif not check_password_hash(request.form['password'],
@@ -189,18 +191,18 @@ def register():
             error = 'The two passwords do not match'
         elif not request.form['email'].lower().endswith('uidaho.edu'):
             error = 'You must have a uidaho email address to compete.'
-        elif query_db('''select * from users where email = ?''', [request.form['email'].lower()], one=True) is not None:
+        elif query_db('''select * from users where email = %s''', (request.form['email'].lower(),), one=True) is not None:
             error = 'That email is already in use'
         else:
             db = get_db()
-            if request.form['admin'] == os.getenv("ADMIN_SECRET", "admin"):
+            if request.form['admin'] == app.config['ADMIN_SECRET']:
                 admin = 1
             else:
                 admin = 0
-            db.execute('''insert into users (
-              email, name, password, admin) values (?, ?, ?, ?)''',
-              [request.form['email'].lower(), request.form['fullname'],
-               generate_password_hash(request.form['password']), admin])
+            db.cursor().execute('''insert into users (
+              email, name, password, admin) values (%s, %s, %s, %s)''',
+              (request.form['email'].lower(), request.form['fullname'],
+               generate_password_hash(request.form['password']), admin))
             db.commit()
             return redirect(url_for('login'))
     return render_template('register.html', error=error)
