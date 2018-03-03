@@ -1,0 +1,3 @@
+# scikit-learn won't build properly unless we install scipy first.
+scipy==1.0.0
+numpy==1.14.0

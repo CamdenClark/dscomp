@@ -3,8 +3,6 @@ import os
 import sqlite3
 from flask_misaka import Misaka
 
-ADMIN_SECRET = 'admin'
-
 app = Flask(__name__)
 Misaka(app)
 app.config.from_object(__name__)
@@ -13,10 +11,12 @@ UPLOAD_FOLDER = os.path.join(app.root_path, 'csvs')
 PRIVATECSV_FOLDER = os.path.join(app.root_path, 'privatecsvs')
 
 app.config.update(dict(
-    DATABASE = os.path.join(app.root_path, 'dscomp.db'),
-    SECRET_KEY = 'devkey',
+    DATABASE = 'dscomp',
+    DATABASE_HOST = 'localhost',
     USERNAME = 'admin',
     PASSWORD = 'default',
+    SECRET_KEY = 'devkey',
+    ADMIN_SECRET = 'admin',
     UPLOAD_FOLDER = UPLOAD_FOLDER,
     PRIVATECSV_FOLDER = PRIVATECSV_FOLDER
 ))
