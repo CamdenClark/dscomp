@@ -1,5 +1,6 @@
 drop table if exists submissions;
 drop table if exists users;
+drop table if exists pages;
 create table users (
     userid integer primary key auto_increment,
     name text not null,
@@ -26,5 +27,6 @@ create table submissions (
     privatescore real not null,
     publicscore real not null,
     notes text,
+    uuid text,
     foreign key(userid) references users(userid)
 );

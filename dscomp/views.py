@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, redirect, send_from_directory
 import pandas as pd
 from sklearn.model_selection import train_test_split 
@@ -129,7 +130,8 @@ def upload():
     if error is not None:
         return render_template('upload.html', error=error)
     try:
-        filename = secure_filename(csvFile.filename)
+        uuid_filename = str(uuid.uuid1())
+        filename = uuid_filename + ".csv"
         csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         user_csv = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         scoring_csv = pd.read_csv(os.path.join(app.config['PRIVATECSV_FOLDER'], "test_labels.csv"))
@@ -140,8 +142,8 @@ def upload():
         privateAccuracy = accuracy_score(privateMerged['true_label'].values, privateMerged['label'].values)
         db = get_db()
         db.cursor().execute('''insert into submissions (
-          userid, timestamp, privatescore, publicscore, notes) values (%s, %s, %s, %s, %s)''',
-          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes']))
+          userid, timestamp, privatescore, publicscore, notes, uuid) values (%s, %s, %s, %s, %s, %s)''',
+          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes'], uuid_filename))
         db.commit()
         return redirect(url_for('recent_submission'))
     except Exception as ex:
@@ -151,6 +153,8 @@ def upload():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    if filename not in ['train.csv', 'test.csv']:
+        return redirect(url_for('upload'))
     return send_from_directory(os.path.join(app.root_path,
                                'csvs'), filename)
 
