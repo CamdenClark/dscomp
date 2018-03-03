@@ -3,7 +3,7 @@ from flask import Flask, request, session, g, redirect, url_for, abort, render_t
 import pandas as pd
 from sklearn.model_selection import train_test_split 
 from werkzeug.utils import secure_filename
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import accuracy_score 
 import datetime
 from dscomp.utilities.security import allowed_file, generate_password_hash, check_password_hash
 from dscomp.utilities.database import *
@@ -25,7 +25,7 @@ def about():
 
 @app.route('/admin/leaderboard', methods=['GET'])
 def admin_leaderboard():
-    entries = query_db('select users.name, min(privatescore) as privatescore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore asc limit 20')
+    entries = query_db('select users.name, max(privatescore) as privatescore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore desc limit 20')
     return render_template('admin_leaderboard.html', entries = entries)
 
 @app.route('/admin/edit', methods=['GET', 'POST'])
@@ -86,7 +86,7 @@ def data():
 
 @app.route('/leaderboard')
 def leaderboard():
-    entries = query_db('select users.name, min(publicscore) as publicscore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by publicscore asc limit 20')
+    entries = query_db('select users.name, max(publicscore) as publicscore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by publicscore desc limit 20')
     return render_template('leaderboard.html', entries=entries)
 
 @app.route('/scoring', methods=['GET'])
@@ -134,14 +134,14 @@ def upload():
         user_csv = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         scoring_csv = pd.read_csv(os.path.join(app.config['PRIVATECSV_FOLDER'], "test_labels.csv"))
         publicCSV, privateCSV = train_test_split(scoring_csv, test_size = 0.5, random_state = os.getenv('RAND_SEED', 0))
-        publicMerged = publicCSV.merge(user_csv, on='index_num', how='inner')
-        privateMerged = privateCSV.merge(user_csv, on = 'index_num', how='inner')
-        publicMSE = mean_squared_error(publicMerged['label'].values, publicMerged['true_label'].values)
-        privateMSE = mean_squared_error(privateMerged['label'].values, privateMerged['true_label'].values)
+        publicMerged = publicCSV.merge(user_csv, on='index', how='inner')
+        privateMerged = privateCSV.merge(user_csv, on = 'index', how='inner')
+        publicAccuracy = accuracy_score(publicMerged['true_label'].values,publicMerged['label'].values)
+        privateAccuracy = accuracy_score(privateMerged['true_label'].values, privateMerged['label'].values)
         db = get_db()
         db.cursor().execute('''insert into submissions (
           userid, timestamp, privatescore, publicscore, notes) values (%s, %s, %s, %s, %s)''',
-          (g.user['userid'], datetime.datetime.utcnow(), privateMSE, publicMSE, request.form['notes']))
+          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes']))
         db.commit()
         return redirect(url_for('recent_submission'))
     except Exception as ex:
