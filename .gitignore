@@ -5,6 +5,8 @@ dscomp.egg-info/
 __pycache__/
 *.swp
 *.csv
+*.png
+*.ipynb
 venv/
 *.pyc
 .uwsgi_plugins_builder/
