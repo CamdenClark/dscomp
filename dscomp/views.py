@@ -66,7 +66,8 @@ def admin_upload():
         input_to_filename = {
                 'testnolabels': os.path.join(app.config['UPLOAD_FOLDER'], 'test.csv'),
                 'train': os.path.join(app.config['UPLOAD_FOLDER'], 'train.csv'),
-                'testlabels': os.path.join(app.config['PRIVATECSV_FOLDER'], 'test_labels.csv')
+                'testlabels': os.path.join(app.config['PRIVATECSV_FOLDER'], 'test_labels.csv'),
+                'vizdata': os.path.join(app.config['UPLOAD_FOLDER'], 'vizdata.csv')
         }
         if filetypes[0] in input_to_filename.keys():
             csvFile.save(input_to_filename[filetypes[0]])
@@ -82,7 +83,7 @@ def admin_upload():
 
 @app.route('/data', methods=['GET'])
 def data():
-    content = query_db('''select content from pages where page = 'train' or page = 'test';''')
+    content = query_db('''select content from pages where page = 'train' or page = 'test' or page = 'dataviz';''')
     return render_template('data.html', content=content)
 
 @app.route('/leaderboard')
@@ -131,21 +132,26 @@ def upload():
         return render_template('upload.html', error=error)
     try:
         uuid_filename = str(uuid.uuid1())
-        filename = uuid_filename + ".csv"
+        filename = uuid_filename + csvFile.filename.split('.')[-1]
         csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        user_csv = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        scoring_csv = pd.read_csv(os.path.join(app.config['PRIVATECSV_FOLDER'], "test_labels.csv"))
-        publicCSV, privateCSV = train_test_split(scoring_csv, test_size = 0.5, random_state = os.getenv('RAND_SEED', 0))
-        publicMerged = publicCSV.merge(user_csv, on='index', how='inner')
-        privateMerged = privateCSV.merge(user_csv, on = 'index', how='inner')
-        publicAccuracy = accuracy_score(publicMerged['true_label'].values,publicMerged['label'].values)
-        privateAccuracy = accuracy_score(privateMerged['true_label'].values, privateMerged['label'].values)
         db = get_db()
-        db.cursor().execute('''insert into submissions (
-          userid, timestamp, privatescore, publicscore, notes, uuid) values (%s, %s, %s, %s, %s, %s)''',
-          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes'], uuid_filename))
-        db.commit()
-        return redirect(url_for('recent_submission'))
+        if int(request.form['whichCompetition']) == 0:
+            user_csv = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            scoring_csv = pd.read_csv(os.path.join(app.config['PRIVATECSV_FOLDER'], "test_labels.csv"))
+            publicCSV, privateCSV = train_test_split(scoring_csv, test_size = 0.5, random_state = os.getenv('RAND_SEED', 0))
+            publicMerged = publicCSV.merge(user_csv, on='index', how='inner')
+            privateMerged = privateCSV.merge(user_csv, on = 'index', how='inner')
+            publicAccuracy = accuracy_score(publicMerged['true_label'].values,publicMerged['label'].values)
+            privateAccuracy = accuracy_score(privateMerged['true_label'].values, privateMerged['label'].values)
+            db.cursor().execute('''insert into submissions (
+          userid, timestamp, privatescore, publicscore, notes, uuid, isDataViz) values (%s, %s, %s, %s, %s, %s, %s)''',
+          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes'], uuid_filename, 0))
+            db.commit()
+            return redirect(url_for('recent_submission'))
+        else:
+            db.cursor().execute('''insert into submissions (userid, timestamp, notes, uuid, isDataViz) values (%s, %s, %s, %s, %s)''', (g.user['userid'], datetime.datetime.utcnow(), request.form['notes'], uuid_filename, 1))
+            db.commit()
+            return redirect(url_for('submissions'))
     except Exception as ex:
         app.logger.error(str(ex))
         error = 'There was an error reading your submission. Make sure you read the submission styling guidelines carefully. If you think it''s an error on our end, please contact us and describe the error to the best of your ability.'
@@ -153,7 +159,7 @@ def upload():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    if filename not in ['train.csv', 'test.csv']:
+    if filename not in ['train.csv', 'test.csv', 'vizdata.csv']:
         return redirect(url_for('upload'))
     return send_from_directory(os.path.join(app.root_path,
                                'csvs'), filename)
