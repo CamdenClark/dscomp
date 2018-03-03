@@ -25,15 +25,15 @@ def about():
 
 @app.route('/admin/leaderboard', methods=['GET'])
 def admin_leaderboard():
-    entries = query_db('select users.name, min(privatescore) as privatescore, count(subid) as numsubs, datetime(timestamp) as timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore asc limit 20')
+    entries = query_db('select users.name, min(privatescore) as privatescore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore asc limit 20')
     return render_template('admin_leaderboard.html', entries = entries)
 
 @app.route('/admin/edit', methods=['GET', 'POST'])
 def admin_edit():
     if request.method == 'GET':
         all_pages = query_db('select page, content from pages')
-        pages = {page: content for (page, content) in all_pages}
-        return render_template('admin_edit.html', pages=pages)
+        all_pages = {page['page']: page['content'] for page in all_pages} 
+        return render_template('admin_edit.html', pages=all_pages)
     for page in request.form.keys():
         db = get_db()
         cur = db.cursor()
