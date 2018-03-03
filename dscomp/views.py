@@ -10,7 +10,7 @@ from dscomp.utilities.security import allowed_file, generate_password_hash, chec
 from dscomp.utilities.database import *
 from dscomp import app
 
-N_SUBMISSIONS_PER_DAY = 1
+N_SUBMISSIONS_PER_DAY = 5
 
 @app.before_request
 def before_request():
@@ -24,13 +24,24 @@ def about():
     about = query_db('''select content from pages where page = 'about';''', one = True)
     return render_template('about.html', about = about)
 
+@app.route('/admin/dataviz', methods=['GET'])
+def admin_dataviz():
+    if not g.user or not g.user['admin'] == 1:
+        return redirect(url_for('admin'))
+    entries = query_db('select users.name, timestamp, uuid, extension, notes from submissions inner join users on users.userid = submissions.userid where isDataViz = 1 order by timestamp desc')
+    return render_template('admin_dataviz.html', entries = entries)
+
 @app.route('/admin/leaderboard', methods=['GET'])
 def admin_leaderboard():
-    entries = query_db('select users.name, max(privatescore) as privatescore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by privatescore desc limit 20')
+    if not g.user or not g.user['admin'] == 1:
+        return redirect(url_for('admin'))
+    entries = query_db('select users.name, max(privatescore) as privatescore, count(subid) as numsubs, uuid, extension, timestamp from submissions inner join users on users.userid = submissions.userid where isDataViz = 0 group by submissions.userid order by privatescore desc limit 20')
     return render_template('admin_leaderboard.html', entries = entries)
 
 @app.route('/admin/edit', methods=['GET', 'POST'])
 def admin_edit():
+    if not g.user or not g.user['admin'] == 1:
+        return redirect(url_for('admin'))
     if request.method == 'GET':
         all_pages = query_db('select page, content from pages')
         all_pages = {page['page']: page['content'] for page in all_pages} 
@@ -45,8 +56,8 @@ def admin_edit():
 
 @app.route('/admin/upload', methods=['GET', 'POST'])
 def admin_upload():
-    if g.user['admin'] == 0:
-        return redirect(url_for('about'))
+    if not g.user or not g.user['admin'] == 1:
+        return redirect(url_for('admin'))
     if request.method == "GET":
         return render_template('admin_upload.html')
     filetypes = [inputlabel for inputlabel in request.files]
@@ -88,7 +99,7 @@ def data():
 
 @app.route('/leaderboard')
 def leaderboard():
-    entries = query_db('select users.name, max(publicscore) as publicscore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid group by submissions.userid order by publicscore desc limit 20')
+    entries = query_db('select users.name, max(publicscore) as publicscore, count(subid) as numsubs, timestamp from submissions inner join users on users.userid = submissions.userid where isDataViz = 0 group by submissions.userid order by publicscore desc limit 20')
     return render_template('leaderboard.html', entries=entries)
 
 @app.route('/scoring', methods=['GET'])
@@ -100,7 +111,7 @@ def scoring():
 def submissions():
     if not g.user:
         return redirect(url_for('login'))
-    submissions = query_db('select subid, publicscore, timestamp, notes from submissions where submissions.userid = %s order by timestamp desc', (g.user['userid'],))
+    submissions = query_db('select subid, publicscore, uuid, timestamp, notes, isDataViz from submissions where submissions.userid = %s order by timestamp desc', (g.user['userid'],))
     return render_template('submissions.html', submissions=submissions)
 
 @app.route('/submissions/recent')
@@ -132,7 +143,8 @@ def upload():
         return render_template('upload.html', error=error)
     try:
         uuid_filename = str(uuid.uuid1())
-        filename = uuid_filename + csvFile.filename.split('.')[-1]
+        extension = csvFile.filename.split('.')[-1]
+        filename = uuid_filename + "." + extension
         csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         db = get_db()
         if int(request.form['whichCompetition']) == 0:
@@ -144,12 +156,12 @@ def upload():
             publicAccuracy = accuracy_score(publicMerged['true_label'].values,publicMerged['label'].values)
             privateAccuracy = accuracy_score(privateMerged['true_label'].values, privateMerged['label'].values)
             db.cursor().execute('''insert into submissions (
-          userid, timestamp, privatescore, publicscore, notes, uuid, isDataViz) values (%s, %s, %s, %s, %s, %s, %s)''',
-          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes'], uuid_filename, 0))
+          userid, timestamp, privatescore, publicscore, notes, uuid, isDataViz, extension) values (%s, %s, %s, %s, %s, %s, %s, %s)''',
+          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes'], uuid_filename, 0, extension))
             db.commit()
             return redirect(url_for('recent_submission'))
         else:
-            db.cursor().execute('''insert into submissions (userid, timestamp, notes, uuid, isDataViz) values (%s, %s, %s, %s, %s)''', (g.user['userid'], datetime.datetime.utcnow(), request.form['notes'], uuid_filename, 1))
+            db.cursor().execute('''insert into submissions (userid, timestamp, notes, uuid, isDataViz, extension) values (%s, %s, %s, %s, %s, %s)''', (g.user['userid'], datetime.datetime.utcnow(), request.form['notes'], uuid_filename, 1, extension))
             db.commit()
             return redirect(url_for('submissions'))
     except Exception as ex:
@@ -159,6 +171,8 @@ def upload():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    if g.user['admin'] == 1:
+        return send_from_directory(os.path.join(app.root_path, 'csvs'), filename)
     if filename not in ['train.csv', 'test.csv', 'vizdata.csv']:
         return redirect(url_for('upload'))
     return send_from_directory(os.path.join(app.root_path,

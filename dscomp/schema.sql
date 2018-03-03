@@ -29,6 +29,7 @@ create table submissions (
     publicscore real,
     notes text,
     uuid text,
+    extension text,
     isDataViz integer,
     foreign key(userid) references users(userid)
 );

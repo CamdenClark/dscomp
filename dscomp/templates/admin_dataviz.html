@@ -4,10 +4,9 @@
   <thead>
     <tr>
       <th scope="col">Name</th>
-      <th scope="col"># Submissions</th>
-      <th scope="col">Private LB Score</th>
-      <th scope="col">UUID</th>
       <th scope="col">Timestamp (UTC)</th>
+      <th scope="col">UUID</th>
+      <th scope="col">Notes</th>
     </tr>
   </thead>
   {% if entries %}
@@ -15,10 +14,9 @@
   {% for sub in entries %}
     <tr>
       <th scope="row">{{ sub.name }}</th>
-      <td>{{ sub.numsubs }}</td>
-      <td>{{ sub.privatescore }}</td>
-      <td><a href={{ url_for('uploaded_file', filename = sub.uuid + "." + sub.extension) }}>{{sub.uuid}}</a></td>
       <td>{{ sub.timestamp }}</td>
+      <td><a href={{ url_for('uploaded_file', filename = sub.uuid + "." + sub.extension) }}>{{sub.uuid}}</a></td>
+      <td>{{ sub.notes }}</td>
     </tr>
     {% endfor %}
   {% endif %}

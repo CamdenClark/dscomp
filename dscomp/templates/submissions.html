@@ -6,6 +6,8 @@
       <th scope="col">Submission ID</th>
       <th scope="col">Timestamp (UTC)</th>
       <th scope="col">Public LB Score</th>
+      <th scope="col">Unique ID</th>
+      <th scope="col">Competition</th>
       <th scope="col">Notes</th>
     </tr>
   </thead>
@@ -16,6 +18,12 @@
       <th scope="row">{{ sub.subid }}</th>
       <td>{{ sub.timestamp }}</td>
       <td>{{ sub.publicscore }}</td>
+      <td>{{ sub.uuid }}</td>
+      {% if sub.isDataViz == 0 %}
+      <td>Machine Learning</td>
+      {% else %}
+      <td>Data Visualization</td>
+      {% endif %}
       <td>{% filter markdown %} {{ sub.notes }} {% endfilter %}</td>
     </tr>
     {% endfor %}
