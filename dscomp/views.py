@@ -1,12 +1,13 @@
 import os
 import uuid
+import random
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, redirect, send_from_directory
 import pandas as pd
 from sklearn.model_selection import train_test_split 
 from werkzeug.utils import secure_filename
 from sklearn.metrics import accuracy_score 
 import datetime
-from dscomp.utilities.security import allowed_file, generate_password_hash, check_password_hash
+from dscomp.utilities.security import allowed_file, generate_password_hash, check_password_hash, send_code
 from dscomp.utilities.database import *
 from dscomp import app
 
@@ -16,8 +17,7 @@ N_SUBMISSIONS_PER_DAY = 5
 def before_request():
     g.user = None
     if 'userid' in session:
-        g.user = query_db('select * from users where userid = %s',
-    (session['userid'],), one=True)
+        g.user = query_db('select * from users where userid = %s', (session['userid'],), one=True)
 
 @app.route('/', methods=['GET'])
 def about():
@@ -26,6 +26,8 @@ def about():
 
 @app.route('/admin/dataviz', methods=['GET'])
 def admin_dataviz():
+    if g.user['confirmed'] == 0:
+        return redirect(url_for('confirmation'))
     if not g.user or not g.user['admin'] == 1:
         return redirect(url_for('admin'))
     entries = query_db('select users.name, timestamp, uuid, extension, notes from submissions inner join users on users.userid = submissions.userid where isDataViz = 1 order by timestamp desc')
@@ -34,14 +36,18 @@ def admin_dataviz():
 @app.route('/admin/leaderboard', methods=['GET'])
 def admin_leaderboard():
     if not g.user or not g.user['admin'] == 1:
-        return redirect(url_for('admin'))
+        return redirect(url_for('about'))
+    if g.user['confirmed'] == 0:
+        return redirect(url_for('confirmation'))
     entries = query_db('select users.name, max(privatescore) as privatescore, count(subid) as numsubs, uuid, extension, timestamp from submissions inner join users on users.userid = submissions.userid where isDataViz = 0 group by submissions.userid order by privatescore desc limit 20')
     return render_template('admin_leaderboard.html', entries = entries)
 
 @app.route('/admin/edit', methods=['GET', 'POST'])
 def admin_edit():
     if not g.user or not g.user['admin'] == 1:
-        return redirect(url_for('admin'))
+        return redirect(url_for('about'))
+    if g.user['confirmed'] == 0:
+        return redirect(url_for('confirmation'))
     if request.method == 'GET':
         all_pages = query_db('select page, content from pages')
         all_pages = {page['page']: page['content'] for page in all_pages} 
@@ -57,7 +63,9 @@ def admin_edit():
 @app.route('/admin/upload', methods=['GET', 'POST'])
 def admin_upload():
     if not g.user or not g.user['admin'] == 1:
-        return redirect(url_for('admin'))
+        return redirect(url_for('about'))
+    if g.user['confirmed'] == 0:
+        return redirect(url_for('confirmation'))
     if request.method == "GET":
         return render_template('admin_upload.html')
     filetypes = [inputlabel for inputlabel in request.files]
@@ -111,8 +119,38 @@ def scoring():
 def submissions():
     if not g.user:
         return redirect(url_for('login'))
+    if g.user['confirmed'] == 0:
+        return redirect(url_for('confirmation'))
     submissions = query_db('select subid, publicscore, uuid, timestamp, notes, isDataViz from submissions where submissions.userid = %s order by timestamp desc', (g.user['userid'],))
     return render_template('submissions.html', submissions=submissions)
+
+@app.route('/register/confirm/resend')
+def resend_confirmation():
+    if not g.user:
+        return redirect(url_for('login'))
+    if g.user['confirmed']:
+        return redirect(url_for('about'))
+    if request.method == 'GET':
+        send_code(g.user['email'], g.user['code'])
+        return redirect(url_for('about'))
+
+@app.route('/register/confirm', methods=['GET', 'POST'])
+def confirmation():
+    if not g.user:
+        return redirect(url_for('login'))
+    if g.user['confirmed']:
+        return redirect(url_for('about'))
+    error = None
+    if request.method == 'GET':
+        return render_template('confirmation.html')
+    if not int(request.form['confirm']) == g.user['code']:
+        error = 'Invalid confirmation code.'
+    else:
+        db = get_db()
+        db.cursor().execute('''update users set confirmed = %s where userid = %s''', (1, int(g.user['userid'])))
+        db.commit()
+        return redirect(url_for('about'))
+    return render_template('confirmation.html', error=error)
 
 @app.route('/submissions/recent')
 def recent_submission():
@@ -218,15 +256,17 @@ def register():
         elif query_db('''select * from users where email = %s''', (request.form['email'].lower(),), one=True) is not None:
             error = 'That email is already in use'
         else:
-            db = get_db()
+            code = random.randint(1, 10000) 
+            send_code(request.form['email'], code)
             if request.form['admin'] == app.config['ADMIN_SECRET']:
                 admin = 1
             else:
                 admin = 0
+            db = get_db()
             db.cursor().execute('''insert into users (
-              email, name, password, admin) values (%s, %s, %s, %s)''',
+              email, name, password, admin, code, confirmed) values (%s, %s, %s, %s, %s, %s)''',
               (request.form['email'].lower(), request.form['fullname'],
-               generate_password_hash(request.form['password']), admin))
+               generate_password_hash(request.form['password']), admin, code, 0))
             db.commit()
             return redirect(url_for('login'))
     return render_template('register.html', error=error)
@@ -234,6 +274,5 @@ def register():
 @app.route('/logout')
 def logout():
     """Logs the user out."""
-    flash('You were logged out')
     session.pop('userid', None)
     return redirect(url_for('about'))
