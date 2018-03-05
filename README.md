@@ -8,6 +8,8 @@ pip install -r requirements.1.txt
 
 export FLASK_APP=dscomp
 export FLASK_DEBUG = true
+mkdir dscomp/csvs
+mkdir dscomp/privatecsvs
 flask initdb
 flask run
 ```
