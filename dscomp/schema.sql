@@ -6,7 +6,9 @@ create table users (
     name text not null,
     email text not null,
     password text not null,
-    admin int not null
+    admin int not null,
+    code int,
+    confirmed int
 );
 
 create table pages (
