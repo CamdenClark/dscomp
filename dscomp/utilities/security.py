@@ -6,11 +6,18 @@ from dscomp.utilities.database import *
 
 ALLOWED_EXTENSIONS = set(['csv', 'ipynb'])
 
-def send_code(email, code):
+def send_code(email, code, activation=True):
     TO = email
-    SUBJECT = 'UIDataScience Competition: Activation Code'
-    TEXT = 'Your activation code is: {}'.format(code)
-
+    if activation:
+        SUBJECT = 'UIDataScience Competition: Activation Code'
+        TEXT = '''Your activation code is: {}
+        
+        Confirm your email at http://dscomp.ibest.uidaho.edu/register/confirm'''.format(code)
+    else:
+        SUBJECT = 'UIDataScience Competition: Reset your password'
+        TEXT = '''Your reset code is: {}
+        
+        Reset your password at http://dscomp.ibest.uidaho.edu/reset/password'''.format(code)
     gmail_sender = 'uidatascience@gmail.com'
     gmail_passwd = 'machinelearning'
 

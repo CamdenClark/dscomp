@@ -7,7 +7,7 @@ create table users (
     email text not null,
     password text not null,
     admin int not null,
-    code int,
+    code text,
     confirmed int
 );
 
