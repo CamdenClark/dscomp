@@ -143,7 +143,7 @@ def confirmation():
     error = None
     if request.method == 'GET':
         return render_template('confirmation.html')
-    if not int(request.form['confirm']) == g.user['code']:
+    if not request.form['confirm'] == g.user['code']:
         error = 'Invalid confirmation code.'
     else:
         db = get_db()
@@ -151,6 +151,42 @@ def confirmation():
         db.commit()
         return redirect(url_for('about'))
     return render_template('confirmation.html', error=error)
+
+@app.route('/reset', methods=['GET', 'POST'])
+def reset_password():
+    if g.user:
+        return redirect(url_for('about'))
+    error = None
+    if request.method == 'GET':
+        return render_template('reset_password.html')
+    user = query_db('''select * from users where email = %s''', (request.form['email'], ), one=True)
+    if not user:
+        return render_template('reset_password.html', error = 'No account associated with that email.')
+    code = str(uuid.uuid1())[:5]
+    db = get_db()
+    db.cursor().execute('''update users set code = %s where email = %s''', (code, user['email']))
+    db.commit()
+    send_code(user['email'], code, activation=False)
+    return render_template('reset_password.html', success='Sent a link to reset your password')
+
+@app.route('/reset/password', methods=['GET', 'POST'])
+def reset_password_code():
+    if g.user:
+        return redirect(url_for('about'))
+    if request.method == 'GET':
+        return render_template('reset_password_code.html')
+    user = query_db('select * from users where code = %s', (request.form['code'], ), one=True)
+    if not user:
+        return render_template('reset_password_code.html', error = 'Invalid code.')
+    if not request.form['password']:
+        return render_template('reset_password_code.html', error = 'You forgot a password.')
+    if not request.form['password'] == request.form['password2']:
+        return render_template('reset_password_code.html', error = 'Passwords don''t match.')
+    hashed_pass = generate_password_hash(request.form['password'])
+    db = get_db()
+    db.cursor().execute('''update users set password = %s where userid = %s''', (hashed_pass, user['userid']))
+    db.commit()
+    return redirect(url_for('login'))
 
 @app.route('/submissions/recent')
 def recent_submission():
@@ -256,7 +292,7 @@ def register():
         elif query_db('''select * from users where email = %s''', (request.form['email'].lower(),), one=True) is not None:
             error = 'That email is already in use'
         else:
-            code = random.randint(1, 10000) 
+            code = str(uuid.uuid1())[:5] 
             send_code(request.form['email'], code)
             if request.form['admin'] == app.config['ADMIN_SECRET']:
                 admin = 1
