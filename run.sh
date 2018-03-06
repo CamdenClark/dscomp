@@ -15,6 +15,8 @@ USERNAME = 'dsuser'
 PASSWORD = 'dspassword'
 SECRET_KEY = 'devkey'
 ADMIN_SECRET = 'admin'
+EMAIL_ADDRESS = 'uidatascience@gmail.com'
+EMAIL_PASSWORD = ''
 EOF
 fi
 
