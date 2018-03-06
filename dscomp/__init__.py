@@ -2,9 +2,17 @@ from flask import Flask, request, session, g, redirect, url_for, abort, render_t
 import os
 import sqlite3
 from flask_misaka import Misaka
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 Misaka(app)
+limiter = Limiter(
+        app,
+        key_func = get_remote_address,
+        default_limits = ["200 per day", "50 per hour"]
+        )
+
 app.config.from_object(__name__)
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'csvs')
