@@ -18,8 +18,8 @@ def send_code(email, code, activation=True):
         TEXT = '''Your reset code is: {}
         
         Reset your password at http://dscomp.ibest.uidaho.edu/reset/password'''.format(code)
-    gmail_sender = 'uidatascience@gmail.com'
-    gmail_passwd = 'machinelearning'
+    gmail_sender = app.config['EMAIL_ADDRESS']
+    gmail_passwd = app.config['EMAIL_PASSWORD']
 
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     server.login(gmail_sender, gmail_passwd)
