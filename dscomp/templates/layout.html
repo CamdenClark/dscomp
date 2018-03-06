@@ -1,53 +1,75 @@
-<head>
-	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.6/umd/popper.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>        
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous"> 
-<title>UI Data Science Competition</title>
-</head>
-<div class="container">
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="{{ url_for('about') }}">UI DataScience Competition</a>	
-  <ul class="navbar-nav mr-auto">
-    <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        About
-      </a>
-      <div class="dropdown-menu" aria-labelledby="aboutDropdown">
-        <a class="dropdown-item" href="{{ url_for('data') }}">Data</a>
-        <a class="dropdown-item" href="{{ url_for('scoring') }}">Scoring</a>
-      </div>
-    </li>
-    {% if g.user['admin'] == 1 %}
-    <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-       Admin 
-      </a>
-      <div class="dropdown-menu" aria-labelledby="adminDropdown">
-        <a class="dropdown-item" href="{{ url_for('admin_edit') }}">Edit pages</a>
-        <a class="dropdown-item" href="{{ url_for('admin_upload') }}">Upload competition files</a>
-        <a class="dropdown-item" href="{{ url_for('admin_leaderboard') }}">Private leaderboard</a>
-        <a class="dropdown-item" href="{{ url_for('admin_dataviz') }}">Data Visualization Submissions</a>
-      </div>
-    </li>
-    {% endif %}
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
-    {% if g.user %}
-    <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" href="#" id="submissionsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Submissions
-      </a>
-      <div class="dropdown-menu" aria-labelledby="submissionsDropdown">
-        <a class="dropdown-item" href="{{ url_for('submissions') }}">My Submissions</a>
-        <a class="dropdown-item" href="{{ url_for('upload') }}">Upload</a>
-      </div>
-    </li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
-    {% else %}
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
-    {% endif %}
- </ul>
-</nav>
-{% block body %}{% endblock %}
-</div>
+<!doctype html>
+<html lang="en">
+  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <tile>UI Student Data Science Competition</tile>
+    <meta name="keywords" content="university of idaho, data science, data visualization" >
+    <meta name="description" content="A data science competition for students of university of Idaho, to promote the Data Science research and education atmosphere on campus.">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  </head>
+
+  <body>
+
+    <div class="container">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('about') }}">UI DataScience Competition</a>	
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              About
+            </a>
+            <div class="dropdown-menu" aria-labelledby="aboutDropdown">
+              <a class="dropdown-item" href="{{ url_for('data') }}">Data</a>
+              <a class="dropdown-item" href="{{ url_for('scoring') }}">Scoring</a>
+            </div>
+          </li>
+          {% if g.user['admin'] == 1 %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Admin 
+            </a>
+            <div class="dropdown-menu" aria-labelledby="adminDropdown">
+              <a class="dropdown-item" href="{{ url_for('admin_edit') }}">Edit pages</a>
+              <a class="dropdown-item" href="{{ url_for('admin_upload') }}">Upload competition files</a>
+              <a class="dropdown-item" href="{{ url_for('admin_leaderboard') }}">Private leaderboard</a>
+              <a class="dropdown-item" href="{{ url_for('admin_dataviz') }}">Data Visualization Submissions</a>
+            </div>
+          </li>
+          {% endif %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+          {% if g.user %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="submissionsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Submissions
+            </a>
+            <div class="dropdown-menu" aria-labelledby="submissionsDropdown">
+              <a class="dropdown-item" href="{{ url_for('submissions') }}">My Submissions</a>
+              <a class="dropdown-item" href="{{ url_for('upload') }}">Upload</a>
+            </div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+          {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+
+    {% block body %}{% endblock %}
+    
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+  </body>
+  
+</html>
