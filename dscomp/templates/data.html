@@ -12,6 +12,8 @@
 {{ content[0].content|safe }}
 {% endfilter %}</p>
     <br />
+    <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='train_labels.csv') }}>Download train labels</a> 
+    <p>These are the train labels. They match with the data provided in the training data. Each represents a symbol or number.</p>
     <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='test.csv') }}>Download test data</a> 
 
     <p>Description of test dataset:</p>

@@ -87,7 +87,8 @@ def admin_upload():
                 'train': os.path.join(app.config['UPLOAD_FOLDER'], 'train.csv'),
                 'testlabels': os.path.join(app.config['PRIVATECSV_FOLDER'], 'test_labels.csv'),
                 'vizdata': os.path.join(app.config['UPLOAD_FOLDER'], 'vizdata.csv'),
-                'samplesubmission': os.path.join(app.config['UPLOAD_FOLDER'], 'sample_submission.csv')
+                'samplesubmission': os.path.join(app.config['UPLOAD_FOLDER'], 'sample_submission.csv'),
+                'trainlabels': os.path.join(app.config['UPLOAD_FOLDER'], 'train_labels.csv')
         }
         if filetypes[0] in input_to_filename.keys():
             csvFile.save(input_to_filename[filetypes[0]])
