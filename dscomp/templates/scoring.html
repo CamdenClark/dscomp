@@ -1,7 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
-<h1>Description of scoring</h1>
-{% filter markdown %}
-{{ content.content|safe }}
-{% endfilter %}
+<div class="container">
+    <h1>Description of scoring</h1>
+    {% filter markdown %}
+    {{ content.content|safe }}
+    {% endfilter %}
+</div>
 {% endblock body %}
