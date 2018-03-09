@@ -1,68 +1,71 @@
 {% extends "layout.html" %}
 {% block body %}
-{% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
-<div class="row">
-  <div class="col-md-4">
-    <h4>Upload test labels</h4>
-    <p>This should be <strong>hidden</strong> from the user.</p>
-    <form method=post enctype=multipart/form-data>
-      <div class="form-group">
-        <input type=file class="form-control-file" name=testlabels>
-      </div>
-      <button type=submit class="btn btn-primary">Upload test labels</button>
-    </form>
+<div class="container">
+  <h1>Admin Upload Competition Files</h1>
+  {% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
+  <div class="row">
+    <div class="col-md-4">
+      <h4>Upload test labels</h4>
+      <p>This should be <strong>hidden</strong> from the user.</p>
+      <form method=post enctype=multipart/form-data>
+        <div class="form-group">
+          <input type=file class="form-control-file" name=testlabels>
+        </div>
+        <button type=submit class="btn btn-primary">Upload test labels</button>
+      </form>
+    </div>
+    <div class="col-md-4">
+      <h4>Upload train labels</h4>
+      <p>This will be shown to the user</p>
+      <form method=post enctype=multipart/form-data>
+        <div class="form-group">
+          <input type=file class="form-control-file" name=trainlabels>
+        </div>
+        <button type=submit class="btn btn-primary">Upload train labels</button>
+      </form>
+    </div>
+    <div class="col-md-4">
+      <h4>Upload train data</h4>
+      <p>This will be shown to the user</p>
+      <form method=post enctype=multipart/form-data>
+        <div class="form-group">
+          <input type=file class="form-control-file" name=train>
+        </div>
+        <button type=submit class="btn btn-primary">Upload train data</button>
+      </form>
+    </div>
   </div>
-  <div class="col-md-4">
-    <h4>Upload train labels</h4>
-    <p>This will be shown to the user</p>
-    <form method=post enctype=multipart/form-data>
-      <div class="form-group">
-        <input type=file class="form-control-file" name=trainlabels>
-      </div>
-      <button type=submit class="btn btn-primary">Upload train labels</button>
-    </form>
-  </div>
-  <div class="col-md-4">
-    <h4>Upload train data</h4>
-    <p>This will be shown to the user</p>
-    <form method=post enctype=multipart/form-data>
-      <div class="form-group">
-        <input type=file class="form-control-file" name=train>
-      </div>
-      <button type=submit class="btn btn-primary">Upload train data</button>
-    </form>
-  </div>
-</div>
-<div class="row">
-  <div class="col-md-4">
-    <h4>Upload test data (without labels)</h4>
-    <p>This will be available to the user.</p>
-    <form method=post enctype=multipart/form-data>
-      <div class="form-group">
-        <input type=file class="form-control-file" name=testnolabels>
-      </div>
-      <button type=submit class="btn btn-primary">Upload test data (without labels)</button>
-    </form>
-  </div>
-  <div class="col-md-4">
-    <h4>Upload data for visualization competition</h4>
-    <p>This will be available to the user.</p>
-    <form method=post enctype=multipart/form-data>
-      <div class="form-group">
-        <input type=file class="form-control-file" name=vizdata>
-      </div>
-      <button type=submit class="btn btn-primary">Upload visualization data</button>
-    </form>
-  </div>
-  <div class="col-md-4">
-    <h4>Upload sample submission</h4>
-    <p>This will be available to the user.</p>
-    <form method=post enctype=multipart/form-data>
-      <div class="form-group">
-        <input type=file class="form-control-file" name=samplesubmission>
-      </div>
-      <button type=submit class="btn btn-primary">Upload sample submission</button>
-    </form>
+  <div class="row">
+    <div class="col-md-4">
+      <h4>Upload test data (without labels)</h4>
+      <p>This will be available to the user.</p>
+      <form method=post enctype=multipart/form-data>
+        <div class="form-group">
+          <input type=file class="form-control-file" name=testnolabels>
+        </div>
+        <button type=submit class="btn btn-primary">Upload test data (without labels)</button>
+      </form>
+    </div>
+    <div class="col-md-4">
+      <h4>Upload data for visualization competition</h4>
+      <p>This will be available to the user.</p>
+      <form method=post enctype=multipart/form-data>
+        <div class="form-group">
+          <input type=file class="form-control-file" name=vizdata>
+        </div>
+        <button type=submit class="btn btn-primary">Upload visualization data</button>
+      </form>
+    </div>
+    <div class="col-md-4">
+      <h4>Upload sample submission</h4>
+      <p>This will be available to the user.</p>
+      <form method=post enctype=multipart/form-data>
+        <div class="form-group">
+          <input type=file class="form-control-file" name=samplesubmission>
+        </div>
+        <button type=submit class="btn btn-primary">Upload sample submission</button>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock body %}

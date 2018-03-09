@@ -1,33 +1,36 @@
 {% extends "layout.html" %}
 {% block title %}Sign Up{% endblock %}
 {% block body %}
-<div class="col-md-6">
-  <h2>Sign Up</h2>
-  {% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
-  <form action="" method="post">
-    <div class="form-group">
-      <label for="emailinput">Email:</label>
-      <input type="text" class="form-control" id="emailinput" 
-              name="email" size="30" value="{{ request.form.email }}">
-    </div>
-    <div class="form-group">
-      <label for="fullnameinput">Full name:</label>
-      <input type="text" class="form-control" id="fullnameinput" 
-              name="fullname" size="30" value="{{ request.form.name }}">
-    </div>
-    <div class="form-group">
-      <label for="pwinput">Password:</label>
-      <input class="form-control" type="password" name="password" id="pwinput" size="30">
-    </div>
-    <div class="form-group">
-      <label for="pw2input">Password (again):</label>
-      <input class="form-control" type="password" name="password2" id="pw2input" size="30">
-    </div>
-    <div class="form-group">
-      <label for="admin">Admin secret (leave blank if not an admin):</label>
-      <input class="form-control" type="password" name="admin" id="admin" size="30">
-    </div>
-    <button type="submit" class="btn btn-primary">Sign up</button>
-  </form>
+<div class="container">
+  <div class="col-md-6">
+    <h2>Sign Up</h2>
+    <p>To take part in the Data Science Competition, please create an account using your <strong>UI email</strong>.</p>
+    {% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
+    <form action="" method="post">
+      <div class="form-group">
+        <label for="emailinput">Email:</label>
+        <input type="text" class="form-control" id="emailinput" 
+                name="email" size="30" value="{{ request.form.email }}">
+      </div>
+      <div class="form-group">
+        <label for="fullnameinput">Full name:</label>
+        <input type="text" class="form-control" id="fullnameinput" 
+                name="fullname" size="30" value="{{ request.form.name }}">
+      </div>
+      <div class="form-group">
+        <label for="pwinput">Password:</label>
+        <input class="form-control" type="password" name="password" id="pwinput" size="30">
+      </div>
+      <div class="form-group">
+        <label for="pw2input">Password (again):</label>
+        <input class="form-control" type="password" name="password2" id="pw2input" size="30">
+      </div>
+      <div class="form-group">
+        <label for="admin">Admin secret (leave blank if not an admin):</label>
+        <input class="form-control" type="password" name="admin" id="admin" size="30">
+      </div>
+      <button type="submit" class="btn btn-primary">Sign up</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

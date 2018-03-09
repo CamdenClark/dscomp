@@ -1,27 +1,30 @@
 {% extends "layout.html" %}
 {% block body %}
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Name</th>
-      <th scope="col"># Submissions</th>
-      <th scope="col">Private LB Score</th>
-      <th scope="col">UUID</th>
-      <th scope="col">Timestamp (UTC)</th>
-    </tr>
-  </thead>
-  {% if entries %}
-  <tbody>
-  {% for sub in entries %}
-    <tr>
-      <th scope="row">{{ sub.name }}</th>
-      <td>{{ sub.numsubs }}</td>
-      <td>{{ sub.privatescore }}</td>
-      <td><a href={{ url_for('uploaded_file', filename = sub.uuid + "." + sub.extension) }}>{{sub.uuid}}</a></td>
-      <td>{{ sub.timestamp }}</td>
-    </tr>
-    {% endfor %}
-  {% endif %}
-  </tbody>
-</table>
+<div class="container">
+  <h1>Admin Leaderboard</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col"># Submissions</th>
+        <th scope="col">Private LB Score</th>
+        <th scope="col">UUID</th>
+        <th scope="col">Timestamp (UTC)</th>
+      </tr>
+    </thead>
+    {% if entries %}
+    <tbody>
+    {% for sub in entries %}
+      <tr>
+        <th scope="row">{{ sub.name }}</th>
+        <td>{{ sub.numsubs }}</td>
+        <td>{{ sub.privatescore }}</td>
+        <td><a href={{ url_for('uploaded_file', filename = sub.uuid + "." + sub.extension) }}>{{sub.uuid}}</a></td>
+        <td>{{ sub.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+</div>
 {% endblock body %}
