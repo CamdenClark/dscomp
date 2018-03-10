@@ -247,9 +247,9 @@ def upload():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    if g.user['admin'] == 1:
+    if g.user and g.user['admin'] == 1:
         return send_from_directory(os.path.join(app.root_path, 'csvs'), filename)
-    if filename not in ['train.csv', 'test.csv', 'vizdata.csv']:
+    if filename not in ['train.csv', 'test.csv', 'vizdata.csv', 'train_labels.csv', 'sample_submission.csv']:
         return redirect(url_for('upload'))
     return send_from_directory(os.path.join(app.root_path,
                                'csvs'), filename)
