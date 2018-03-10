@@ -2,8 +2,10 @@
 {% block body %}
 <div class="container">
     <h1>Description of scoring</h1>
-    {% filter markdown %}
-    {{ content.content|safe }}
-    {% endfilter %}
+    <p>
+{% filter markdown %}
+{{ content.content|safe }}
+{% endfilter %}
+    </p>
 </div>
 {% endblock body %}

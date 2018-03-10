@@ -9,9 +9,10 @@
       <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='train.csv') }}>Download training data</a> 
 
       <p>Description of training dataset:</p>
-      <p>{% filter markdown %}
-      {{ content[0].content|safe }}
-      {% endfilter %}</p>
+      <p>
+  {% filter markdown %}
+  {{ content[0].content|safe }}
+  {% endfilter %}</p>
       <br />
       <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='train_labels.csv') }}>Download training labels</a> 
       <p>These are the training labels. They match with the data provided in the training data. Each represents a symbol or number.</p>
