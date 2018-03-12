@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
 <div class="container">
-    <h1>Description of scoring</h1>
-    <p>
+    <h1>Competition Scoring</h1>
+
 {% filter markdown %}
 {{ content.content|safe }}
 {% endfilter %}
-    </p>
+
 </div>
 {% endblock body %}

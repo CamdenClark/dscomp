@@ -2,42 +2,72 @@
 {% block title %}Sign In{% endblock %}
 {% block body %}
 <div class="container">
+  <h1>Competition Data</h1>
+  <div class="row mb-2 mt-2">
+      <div class="col-sm-12">
+        <div class="card">
+          <h2 class="card-header"><i class="fas fa-info-circle"></i> Get Started</h2>
+          <div class="card-body">
+            <p class="card-text">To join the UI Data Science Competition:</p>
+            <ol>
+              <li><a href="https://dscomp.ibest.uidaho.edu/register">Create an account</a> using your UI email address, and confirm your email.</li>
+              <li>Download the competition data sets from this page.</li>
+              <li>Check out the details about <a href="https://dscomp.ibest.uidaho.edu/scoring">competition scoring</a>.</li>
+              <li><a href="https://dscomp.ibest.uidaho.edu/upload">Upload submissions</a> between March 12th and April 22nd.</li>
+            </ol>
+            <p class="card-text">The entire UI community is welcome to participate in either or both of the competitions. Early and multiple submissions are encouraged in both competitions--the first 80 students with a complete submission will earn a Data Science Competition T-shirt!</p>
+            <p class="card-text">Be sure to join the <a href="https://join.slack.com/t/uidscomp/shared_invite/enQtMzI4OTQ2NzkyMDU0LWZhNTJjNjdhYjFjZWQ4MjUxYmY1MjUxMmIxZjZmMTIwN2Q3NWI5YTBkY2RkNGM1YTg4NWNmMzIxZWExN2RiOWE" target="_blank">UI DS Comp Slack community</a> for announcements, examples, and data science discussion.</p>
+            <p class="card-text">Good luck!</p>
+          </div>
+        </div>
+      </div>
+  </div>
   <div class="row">
     <div class="col-md-6">
+      <div class="card">
+        <h3 id="machine-data" class="card-header"><i class="fas fa-cogs"></i> Machine Learning Dataset</h3>
+        <div class="card-body">
+          <h4>Training data:</h4>
+          <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='train.csv') }}>Download training data</a>
 
-      <h1 id="machine-data">Machine learning competition data set:</h1>
-      <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='train.csv') }}>Download training data</a> 
+{% filter markdown %}
+{{ content[0].content|safe }}
+{% endfilter %}
 
-      <p>Description of training dataset:</p>
-      <p>
-  {% filter markdown %}
-  {{ content[0].content|safe }}
-  {% endfilter %}</p>
-      <br />
-      <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='train_labels.csv') }}>Download training labels</a> 
-      <p>These are the training labels. They match with the data provided in the training data. Each represents a symbol or number.</p>
-      <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='test.csv') }}>Download test data</a> 
+          <br>
+          <h4>Training labels:</h4>
+          <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='train_labels.csv') }}>Download training labels</a>
+          <p>These are the training labels. They match with the data provided in the training data. Each represents a symbol or number.</p>
+          <h4>Test data:</h4>
+          <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='test.csv') }}>Download test data</a> 
 
-      <p>Description of test dataset:</p>
-      <p>
-  {% filter markdown %}
-  {{ content[1].content|safe }}
-  {% endfilter %}
-      </p>
-      <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='sample_submission.csv') }}>Download sample submission</a> 
-      <p>This is a sample submission. This is the format that your submissions should have. The column names should have the same format and you should be sure to include both columns and the labels for each.</p>
+{% filter markdown %}
+{{ content[1].content|safe }}
+{% endfilter %}
+
+          <h4>Sample submission:</h4>          
+          <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='sample_submission.csv') }}>Download sample submission</a> 
+          <p>This is a sample submission. Your competition submissions must be in the same format. Be sure to follow the same column names, and to include both columns and the labels for each.</p>
+        </div>
+      </div>
     </div>
+
     <div class="col-md-6">
-      <h1 id="viz-data">Data visualization competition data set:</h1>
-      <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='vizdata.csv') }}>Download data for visualization</a>
+      <div class="card">
+        <h3 id="viz-data" class="card-header"><i class="fas fa-chart-line"></i> Data Viz Competition Dataset</h3>
+        <div class="card-body">
+          <h4>Dataset for visualization:</h4>
+          <a class="btn btn-primary" href={{ url_for('uploaded_file', filename='vizdata.csv') }}>Download Broadway dataset</a>
 
-      <p>Description of data for visualization:</p>
-      <p>
-  {% filter markdown %}
-  {{ content[2].content|safe }}
-  {% endfilter %}
-      </p>
+{% filter markdown %}
+{{ content[2].content|safe }}
+{% endfilter %}
+
+        </div>
+      </div>
     </div>
+
   </div>
+
 </div>
 {% endblock body %}
