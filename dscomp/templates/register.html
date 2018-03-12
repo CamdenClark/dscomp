@@ -4,16 +4,19 @@
 <div class="container">
   <div class="col-md-6">
     <h2>Sign Up</h2>
-    <p>To take part in the Data Science Competition, please create an account using your <strong>UI email</strong>.</p>
+    <div class="alert alert-primary" role="alert">
+      <p>To take part in the Data Science Competition, please create an account using your <strong>University of Idaho email</strong>. After submitting this form, you will receive an email message with a code to confirm your account.</p>
+      <p><strong>Please note:</strong> your display name will be publicly visible on the competition leaderboard. Have fun with your Data Science name, but keep it positive!</p>
+    </div>
     {% if error %}<div class="alert alert-danger">Error: {{ error }}</div>{% endif %}
     <form action="" method="post">
       <div class="form-group">
-        <label for="emailinput">Email:</label>
+        <label for="emailinput">UI email:</label>
         <input type="text" class="form-control" id="emailinput" 
                 name="email" size="30" value="{{ request.form.email }}">
       </div>
       <div class="form-group">
-        <label for="fullnameinput">Full name:</label>
+        <label for="fullnameinput">Display name:</label>
         <input type="text" class="form-control" id="fullnameinput" 
                 name="fullname" size="30" value="{{ request.form.name }}">
       </div>
@@ -22,12 +25,19 @@
         <input class="form-control" type="password" name="password" id="pwinput" size="30">
       </div>
       <div class="form-group">
-        <label for="pw2input">Password (again):</label>
+        <label for="pw2input">Password (retype):</label>
         <input class="form-control" type="password" name="password2" id="pw2input" size="30">
       </div>
       <div class="form-group">
-        <label for="admin">Admin secret (leave blank if not an admin):</label>
-        <input class="form-control" type="password" name="admin" id="admin" size="30">
+
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+              <label for="admin">Administrator invite (please leave blank if not an administrator)</label>
+          </button>
+          <div class="collapse" id="collapseExample">
+            <div class="card card-body">
+              <input class="form-control" type="password" name="admin" id="admin" size="30">
+            </div>
+          </div>
       </div>
       <button type="submit" class="btn btn-primary">Sign up</button>
     </form>
