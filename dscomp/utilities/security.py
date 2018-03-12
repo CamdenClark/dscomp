@@ -4,7 +4,7 @@ import random
 from dscomp.utilities.database import *
 
 
-ALLOWED_EXTENSIONS = set(['csv', 'ipynb'])
+ALLOWED_EXTENSIONS = set(['csv', 'ipynb', 'pdf', 'png', 'jpg'])
 
 def send_code(email, code, activation=True):
     TO = email

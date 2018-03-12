@@ -221,6 +221,9 @@ def upload():
         uuid_filename = str(uuid.uuid1())
         extension = csvFile.filename.split('.')[-1]
         filename = uuid_filename + "." + extension
+        if extension != 'csv' and int(request.form['whichCompetition']) == 0:
+            error = 'Must upload a csv file.' 
+            return render_template('upload.html', error=error)
         csvFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         db = get_db()
         if int(request.form['whichCompetition']) == 0:
