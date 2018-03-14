@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 import datetime
 from dscomp.utilities.security import allowed_file, generate_password_hash, check_password_hash, send_code
 from dscomp.utilities.database import *
-from dscomp import app, limiter
+from dscomp import app 
 
 N_SUBMISSIONS_PER_DAY = 5
 
