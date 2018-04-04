@@ -236,11 +236,11 @@ def upload():
             privateAccuracy = accuracy_score(privateMerged['true_label'].values, privateMerged['label'].values)
             db.cursor().execute('''insert into submissions (
           userid, timestamp, privatescore, publicscore, notes, uuid, isDataViz, extension) values (%s, %s, %s, %s, %s, %s, %s, %s)''',
-          (g.user['userid'], datetime.datetime.utcnow(), float(privateAccuracy), float(publicAccuracy), request.form['notes'], uuid_filename, 0, extension))
+          (g.user['userid'], datetime.datetime.now(), float(privateAccuracy), float(publicAccuracy), request.form['notes'], uuid_filename, 0, extension))
             db.commit()
             return redirect(url_for('recent_submission'))
         else:
-            db.cursor().execute('''insert into submissions (userid, timestamp, notes, uuid, isDataViz, extension) values (%s, %s, %s, %s, %s, %s)''', (g.user['userid'], datetime.datetime.utcnow(), request.form['notes'], uuid_filename, 1, extension))
+            db.cursor().execute('''insert into submissions (userid, timestamp, notes, uuid, isDataViz, extension) values (%s, %s, %s, %s, %s, %s)''', (g.user['userid'], datetime.datetime.now(), request.form['notes'], uuid_filename, 1, extension))
             db.commit()
             return redirect(url_for('submissions'))
     except Exception as ex:
